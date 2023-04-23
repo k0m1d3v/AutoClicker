@@ -1,19 +1,26 @@
-import pyautogui
-import keyboard
+import time
+import threading
+from pynput.mouse import Controller, Button
+from pynput.keyboard import Listener, KeyCode
 
-isEnabled = False
+ToggleKey = KeyCode(char="cc")
 
+isClicking = False
+mouse = Controller()
 
-def click():
-    while isEnabled:
-        pyautogui.click()
+def clicker():
+    while True:
+        if isClicking:
+            mouse.click(Button.left, 1)
+        time.sleep(0.001)
 
+def toggle_listener(key):
+    if key == ToggleKey:
+        global isClicking
+        isClicking = not isClicking
 
-def stop():
-    isEnabled = False
+clickThread = threading.Thread(target=clicker)
+clickThread.start()
 
-
-startKey = input("insert start key ")
-keyboard.add_hotkey(startKey, click)
-stopKey = input("insert stop key ")
-keyboard.add_hotkey(stopKey, stop)
+with Listener(on_press=toggle_listener) as listener:
+    listener.join()
